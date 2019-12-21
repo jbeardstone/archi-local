@@ -1,0 +1,32 @@
+{
+	"version": 2,
+	"remoteDnsServers": [
+		"1.1.1.1:53"
+	],
+	"envs": [
+		{
+			"name": "",
+			"hostnames": [
+				{
+					"id": 1569323558899348404,
+					"hostname": "linux-q2ib",
+					"ip": "127.0.0.1",
+					"target": "acme.com",
+					"ttl": 1,
+					"type": "A"
+				}
+			]
+		}
+	],
+	"activeEnv": "",
+	"webServerPort": 0,
+	"dnsServerPort": 0,
+	"defaultDns": null,
+	"logLevel": "",
+	"logFile": "",
+	"registerContainerNames": true,
+	"hostMachineHostname": "",
+	"domain": "docker",
+	"dpsNetwork": false,
+	"dpsNetworkAutoConnect": false
+}

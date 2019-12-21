@@ -1,0 +1,12 @@
+export DEFAULT_COLLATION=en_US.UTF-8
+export DEFAULT_CTYPE=en_US.UTF-8
+export DEFAULT_ENCODING=UTF8
+export DEFAULT_PASSWORD=changeme
+export PGADMIN_DEFAULT_EMAIL=admin@tchoo.xyz
+export POSTGRES_DBNAME=dev
+export POSTGRES_MULTIPLE_EXTENSIONS=postgis,hstore,postgis_topology
+export POSTGRES_PASSWORD=dev
+export POSTGRES_USER=dev
+export SERVER_MODE=true
+export TCHOO_DOMAIN=tchoo.hq
+export TCHOO_PROJECT_DOMAIN=tchoo.example

@@ -1,0 +1,115 @@
+version: '3'
+
+services:
+  proxy:
+    # restart: always
+    image: traefik:v1.7.12
+    hostname: proxy.$TCHOO_DOMAIN
+    container_name: proxy
+    ports:
+      - '80:80'
+      - '443:443'
+      # - '8080:8080'
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.port=8080'
+      - 'traefik.domain=${TCHOO_DOMAIN}'
+      - 'traefik.frontend.rule=Host:proxy.${TCHOO_DOMAIN}'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./proxy/traefik.toml:/etc/traefik
+      - ./proxy/certs:/certs
+  # dns-server:
+  #   image: defreitas/dns-proxy-server
+  #   hostname: dns.$TCHOO_DOMAIN
+  #   container_name: dns-proxy-server
+  #   # ports:
+  #   #   - "5380:5380"
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - /etc/resolv.conf:/etc/resolv.conf
+  #     - ${PWD}/dns/conf/:/app/conf/
+  #   labels:
+  #     - 'traefik.enable=true'
+  #     - 'traefik.port=5380'
+  #     - 'traefik.domain=${TCHOO_DOMAIN}'
+  #     - 'traefik.frontend.rule=Host:dns.${TCHOO_DOMAIN}'
+  #     - 'traefik.frontend.redirect.entryPoint=https'
+  accueil:
+    image: nginx
+    hostname: accueil
+    container_name: accueil
+    volumes:
+      - ${PWD}/accueil/html:/usr/share/nginx/html:ro
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.port=80'
+      - 'traefik.frontend.rule=Host:localhost'
+      - 'traefik.domain=local'
+      - 'traefik.frontend.redirect.entryPoint=https'
+  redis:
+    image: redis
+    hostname: redis.db
+    container_name: redis
+    ports:
+      - "6379:6379"
+    # volumes:
+    #   -  ${PWD}/redis/redis.conf:/usr/local/etc/redis/redis.conf
+  postgis:
+    image: kartoza/postgis
+    hostname: postgis.db
+    container_name: postgis
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DBNAME: ${POSTGRES_DBNAME:-dev}
+      POSTGRES_MULTIPLE_EXTENSIONS: ${POSTGRES_MULTIPLE_EXTENSIONS:-postgis,hstore,postgis_topology}
+      DEFAULT_ENCODING: ${DEFAULT_ENCODING:-UTF8}
+      DEFAULT_COLLATION: ${DEFAULT_COLLATION:-en_US.UTF-8}
+      DEFAULT_CTYPE: ${DEFAULT_CTYPE:-en_US.UTF-8}
+    volumes:
+      - ./postgis/data:/var/lib/postgresql
+    ports:
+      - "25432:5432"
+    networks:
+      - postgres
+  pg:
+    image: postgres
+    hostname: pg.db
+    container_name: pg
+    volumes:
+     - ./pg/data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      PGDATA: ./pg/data
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres
+  pgadmin:
+    image: dpage/pgadmin4
+    hostname: pg.admin.$TCHOO_DOMAIN
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@root.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-azertyuiop}
+      SERVER_MODE: ${SERVER_MODE:-false}
+    volumes:
+      - ${PWD}/pg/data:/var/lib/postgresql/data
+      - ${PWD}/pg-admin/config_local.py:/pgadmin4/config_local.py
+      - ${PWD}/pg-admin/servers.json:/pgadmin4/servers.json
+    # ports:
+    #   - "80:80"
+    labels:
+      - 'traefik.port=80'
+      - 'traefik.enable=true'
+      - 'traefik.domain=${TCHOO_DOMAIN}'
+      - 'traefik.frontend.rule=Host:pg.admin.$TCHOO_DOMAIN'
+      - 'traefik.frontend.redirect.entryPoint=https'
+    networks:
+      - postgres
+
+networks:
+  postgres:
+    driver: bridge
